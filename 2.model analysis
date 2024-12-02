@@ -1,0 +1,485 @@
+rm(list = ls())
+pacman::p_load(ROCR,pROC,survival,glmnet,impute,'dplyr','data.table','fst','plyr','tidyr','Hmisc','tableone','zoo','mgcv','splines',stringr,dplyr,progress,survival,openxlsx,plotRCS)
+dir="D:\\2.model"   
+setwd(dir)
+
+data_protein <- fread('data.csv')
+data_protein_train <- fread('data_train.csv')
+data_protein_test <- fread('data_test.csv')
+Pro_code_M2 <- fread('Pro_code_M2.csv')
+
+mydat_2 <- data_protein
+formula_2 <- as.formula(paste("Surv(time, event == 1) ~", "Age + Sex +  Years_education_g2 + Years_education_g3 + employment1 + Income2+ Income3+ Income4+ TDI_g2 + TDI_g3 + TDI_g4 +  Smoking1 + Smoking2 + Alcohol2 + Alcohol3 + Alcohol4 + Alcohol6 + IPAQ1 + IPAQ2 + BMI2 + BMI3 + BMI4 + diet_g2 + diet_g3 + Sleep_g2 + Sleep_g3"))
+
+if (T){
+  fit_2 <- coxph(formula_2, data = mydat_2)
+  summary(fit_2)
+
+  c_index_2 <- summary(fit_2)$concordance[1] 
+  c_index_se_2 <- summary(fit_2)$concordance[2] 
+
+  preds_2 <- predict(fit_2, newdata = mydat_2)
+
+  roc_obj <- roc(mydat_2$event, preds_2)
+  auc_value <- auc(roc_obj)
+  auc_value_ci <- ci(roc_obj)
+
+  auc_2 <-  data.frame(c_index = c_index_2, c_index_se =c_index_se_2,
+                       auc = auc_value, auc_ci = paste(as.vector(auc_value_ci)[1],as.vector(auc_value_ci)[3]))
+
+  results_2 <- data.frame(event = mydat_2$event, pred = preds_2)
+  
+}
+
+if (T){
+  train <- data_protein_train
+  test <- data_protein_test
+
+  fit_train_2 <- coxph(formula_2, data = train)
+
+  c_index_train_2 <- summary(fit_train_2)$concordance[1] 
+  c_index_se_train_2 <- summary(fit_train_2)$concordance[2] 
+
+  preds_train_2 <- predict(fit_train_2, newdata = train)
+
+  roc_obj_train_2 <- roc(train$event, preds_train_2)
+  auc_value_train_2 <- auc(roc_obj_train_2)
+  auc_value_ci_train_2 <- ci(roc_obj_train_2)
+
+  preds_test_2 <- predict(fit_train_2, newdata = test)
+
+  roc_obj_test_2 <- roc(test$event, preds_test_2)
+  auc_value_test_2 <- auc(roc_obj_test_2)
+  auc_value_ci_test_2 <- ci(roc_obj_test_2)
+
+  AUC_train_test_lst_2 <- data.frame(c_index_train = c_index_train_2, c_index_se_train =c_index_se_train_2,
+                                          AUC_train = auc_value_train_2,AUC_train_ci = paste(as.vector(auc_value_ci_train_2)[1],as.vector(auc_value_ci_train_2)[3]),
+                                          
+                                          AUC_test = auc_value_test_2, AUC_test_ci = paste(as.vector(auc_value_ci_test_2)[1],as.vector(auc_value_ci_test_2)[3]))
+  
+
+  results_train_2 <- data.frame(event = train$event, pred = preds_train_2)
+
+  results_test_2 <- data.frame(event = test$event, pred = preds_test_2)
+}
+
+mydat_1 <- data_protein
+combined_proteins_1 <- paste(data_id$Pro_code_M2, collapse = "+")
+formula_1 <- as.formula(paste("Surv(time, event == 1) ~", combined_proteins_1))
+
+if (T){
+
+  fit_1 <- coxph(formula_1, data = mydat_1)
+  summary(fit_1)
+
+  c_index_1 <- summary(fit_1)$concordance[1] 
+  c_index_se_1 <- summary(fit_1)$concordance[2] 
+
+  preds_1 <- predict(fit_1, newdata = mydat_1)
+
+  roc_obj <- roc(mydat_1$event, preds_1)
+  auc_value <- auc(roc_obj)
+  auc_value_ci <- ci(roc_obj)
+
+  auc_1 <-  data.frame(c_index = c_index_1, c_index_se =c_index_se_1,
+                       auc = auc_value, auc_ci = paste(as.vector(auc_value_ci)[1],as.vector(auc_value_ci)[3]))
+
+  results_1 <- data.frame(event = mydat_1$event, pred = preds_1)
+  
+}
+
+if (T){
+  train <- data_protein_train
+  test <- data_protein_test
+
+  fit_train_1 <- coxph(formula_1, data = train)
+
+  c_index_train_1 <- summary(fit_train_1)$concordance[1] 
+  c_index_se_train_1 <- summary(fit_train_1)$concordance[2] 
+
+  preds_train_1 <- predict(fit_train_1, newdata = train)
+
+  roc_obj_train_1 <- roc(train$event, preds_train_1)
+  auc_value_train_1 <- auc(roc_obj_train_1)
+  auc_value_ci_train_1 <- ci(roc_obj_train_1)
+
+  preds_test_1 <- predict(fit_train_1, newdata = test)
+
+  roc_obj_test_1 <- roc(test$event, preds_test_1)
+  auc_value_test_1 <- auc(roc_obj_test_1)
+  auc_value_ci_test_1 <- ci(roc_obj_test_1)
+
+  AUC_train_test_lst_1 <- data.frame(c_index_train = c_index_train_1,c_index_se_train =c_index_se_train_1,
+                                          AUC_train = auc_value_train_1,AUC_train_ci = paste(as.vector(auc_value_ci_train_1)[1],as.vector(auc_value_ci_train_1)[3]),
+                                          
+                                          AUC_test = auc_value_test_1, AUC_test_ci = paste(as.vector(auc_value_ci_test_1)[1],as.vector(auc_value_ci_test_1)[3]))
+
+  results_train_1 <- data.frame(event = train$event, pred = preds_train_1)
+
+  results_test_1<- data.frame(event = test$event, pred = preds_test_1)
+}
+
+mydat_3 <- data_protein
+formula_3 <- as.formula(paste("Surv(time, event == 1) ~", combined_proteins_1,"+Age + Sex +  Years_education_g2 + Years_education_g3 + employment1 + Income2+ Income3+ Income4+ TDI_g2 + TDI_g3 + TDI_g4 +  Smoking1 + Smoking2 + Alcohol2 + Alcohol3 + Alcohol4 + Alcohol6 + IPAQ1 + IPAQ2 + BMI2 + BMI3 + BMI4 + diet_g2 + diet_g3 + Sleep_g2 + Sleep_g3"))
+
+if (T){
+
+  fit_3 <- coxph(formula_3, data = mydat_3)
+  summary(fit_3)
+
+  c_index_3 <- summary(fit_3)$concordance[1] 
+  c_index_se_3 <- summary(fit_3)$concordance[2] 
+
+  preds_3 <- predict(fit_3, newdata = mydat_3)
+
+  roc_obj <- roc(mydat_3$event, preds_3)
+  auc_value <- auc(roc_obj)
+  auc_value_ci <- ci(roc_obj)
+
+  auc_3 <-  data.frame(c_index = c_index_3, c_index_se =c_index_se_3,
+                       auc = auc_value, auc_ci = paste(as.vector(auc_value_ci)[1],as.vector(auc_value_ci)[3]))
+
+  results_3 <- data.frame(event = mydat_3$event, pred = preds_3)
+  
+}
+
+if (T){
+  train <- data_protein_train
+  test <- data_protein_test
+
+  fit_train_3 <- coxph(formula_3, data = train)
+
+  c_index_train_3 <- summary(fit_train_3)$concordance[1] 
+  c_index_se_train_3 <- summary(fit_train_3)$concordance[2] 
+
+  preds_train_3 <- predict(fit_train_3, newdata = train)
+
+  roc_obj_train_3 <- roc(train$event, preds_train_3)
+  auc_value_train_3 <- auc(roc_obj_train_3)
+  auc_value_ci_train_3 <- ci(roc_obj_train_3)
+
+  preds_test_3 <- predict(fit_train_3, newdata = test)
+
+  roc_obj_test_3 <- roc(test$event, preds_test_3)
+  auc_value_test_3 <- auc(roc_obj_test_3)
+  auc_value_ci_test_3 <- ci(roc_obj_test_3)
+
+  AUC_train_test_lst_3 <- data.frame(
+                                          c_index_train = c_index_train_3,c_index_se_train =c_index_se_train_3,
+                                          AUC_train = auc_value_train_3,AUC_train_ci = paste(as.vector(auc_value_ci_train_3)[1],as.vector(auc_value_ci_train_3)[3]),
+                                          
+                                          AUC_test = auc_value_test_3, AUC_test_ci = paste(as.vector(auc_value_ci_test_3)[1],as.vector(auc_value_ci_test_3)[3]))
+
+  results_train_3<- data.frame(event = train$event, pred = preds_train_3)
+
+  results_test_3<- data.frame(event = test$event, pred = preds_test_3)
+}
+
+
+mydat_4 <- data_protein
+
+if(T){
+
+  v1<- as.matrix(select(mydat_4,c(data_id$Pro_code_M2))) #将显著性蛋白设置为自变量
+  v2 <- Surv(mydat_4$time, mydat_4$event == 1) #设置time为生存时间，event为结局
+  
+  myfit <- glmnet(v1, v2, alpha = 0.5,family = "cox")
+
+  plot(myfit, xvar = "lambda", label = TRUE)
+
+  set.seed(10)
+  myfit2 <- cv.glmnet(v1, v2, nflod=10, type.measure = "deviance",alpha = 0.5,family="cox") 
+  summary(myfit2)
+
+  plot(myfit2)
+  myfit2$lambda.1se
+  coe <- coef(myfit, s = myfit2$lambda.1se) 
+  act_index <- which(coe != 0)
+  act_coe <- coe[act_index]
+  row.names(coe)[act_index]
+  lasso_exp <- row.names(coe)[act_index]
+}
+combined_proteins_4 <- paste(lasso_exp, collapse = "+")
+formula_4 <- as.formula(paste("Surv(time, event == 1) ~", combined_proteins_4))
+
+if (T){
+
+  fit_4 <- coxph(formula_4, data = mydat_4)
+  summary(fit_4)
+
+  c_index_4 <- summary(fit_4)$concordance[1] 
+  c_index_se_4 <- summary(fit_4)$concordance[2] 
+
+  preds_4 <- predict(fit_4, newdata = mydat_4)
+
+  roc_obj <- roc(mydat_4$event, preds_4)
+  auc_value <- auc(roc_obj)
+  auc_value_ci <- ci(roc_obj)
+
+  auc_4 <-  data.frame(c_index = c_index_4, c_index_se =c_index_se_4,
+                       auc = auc_value, auc_ci = paste(as.vector(auc_value_ci)[1],as.vector(auc_value_ci)[3]))
+
+  results_4 <- data.frame(event = mydat_4$event, pred = preds_4)
+  
+}
+
+if (T){
+  train <- data_protein_train
+  test <- data_protein_test
+
+  fit_train_4 <- coxph(formula_4, data = train)
+
+  c_index_train_4 <- summary(fit_train_4)$concordance[1] 
+  c_index_se_train_4 <- summary(fit_train_4)$concordance[2] 
+
+  preds_train_4 <- predict(fit_train_4, newdata = train)
+
+  roc_obj_train_4 <- roc(train$event, preds_train_4)
+  auc_value_train_4 <- auc(roc_obj_train_4)
+  auc_value_ci_train_4 <- ci(roc_obj_train_4)
+
+  preds_test_4 <- predict(fit_train_4, newdata = test)
+
+  roc_obj_test_4 <- roc(test$event, preds_test_4)
+  auc_value_test_4 <- auc(roc_obj_test_4)
+  auc_value_ci_test_4 <- ci(roc_obj_test_4)
+
+  AUC_train_test_lst_4 <- data.frame(
+                                          c_index_train = c_index_train_4,c_index_se_train =c_index_se_train_4,
+                                          AUC_train = auc_value_train_4,AUC_train_ci = paste(as.vector(auc_value_ci_train_4)[1],as.vector(auc_value_ci_train_4)[3]),
+                                          
+                                          AUC_test = auc_value_test_4, AUC_test_ci = paste(as.vector(auc_value_ci_test_4)[1],as.vector(auc_value_ci_test_4)[3]))
+
+  results_train_4 <- data.frame(event = train$event, pred = preds_train_4)
+
+  results_test_4 <- data.frame(event = test$event, pred = preds_test_4)
+}
+
+
+mydat_5 <- data_protein
+formula_5 <- as.formula(paste("Surv(time, event == 1) ~", combined_proteins_4,"+Age + Sex +  Years_education_g2 + Years_education_g3 + employment1 + Income2+ Income3+ Income4+ TDI_g2 + TDI_g3 + TDI_g4 +  Smoking1 + Smoking2 + Alcohol2 + Alcohol3 + Alcohol4 + Alcohol6 + IPAQ1 + IPAQ2 + BMI2 + BMI3 + BMI4 + diet_g2 + diet_g3 + Sleep_g2 + Sleep_g3"))
+
+if (T){
+
+  fit_5 <- coxph(formula_5, data = mydat_5)
+  summary(fit_5)
+
+  c_index_5 <- summary(fit_5)$concordance[1] 
+  c_index_se_5 <- summary(fit_5)$concordance[2] 
+
+  preds_5 <- predict(fit_5, newdata = mydat_5)
+
+  roc_obj <- roc(mydat_5$event, preds_5)
+  auc_value <- auc(roc_obj)
+  auc_value_ci <- ci(roc_obj)
+
+  auc_5 <-  data.frame(c_index = c_index_5, c_index_se =c_index_se_5,
+                       auc = auc_value, auc_ci = paste(as.vector(auc_value_ci)[1],as.vector(auc_value_ci)[3]))
+
+  results_5 <- data.frame(event = mydat_5$event, pred = preds_5)
+  
+}
+
+if (T){
+  train <- data_protein_train
+  test <- data_protein_test
+
+  fit_train_5 <- coxph(formula_5, data = train)
+
+  c_index_train_5 <- summary(fit_train_5)$concordance[1] 
+  c_index_se_train_5 <- summary(fit_train_5)$concordance[2] 
+
+  preds_train_5 <- predict(fit_train_5, newdata = train)
+
+  roc_obj_train_5 <- roc(train$event, preds_train_5)
+  auc_value_train_5 <- auc(roc_obj_train_5)
+  auc_value_ci_train_5 <- ci(roc_obj_train_5)
+
+  preds_test_5 <- predict(fit_train_5, newdata = test)
+
+  roc_obj_test_5 <- roc(test$event, preds_test_5)
+  auc_value_test_5 <- auc(roc_obj_test_5)
+  auc_value_ci_test_5 <- ci(roc_obj_test_5)
+
+  AUC_train_test_lst_5<- data.frame(
+                                          c_index_train = c_index_train_5,c_index_se_train =c_index_se_train_5,
+                                          AUC_train = auc_value_train_5,AUC_train_ci = paste(as.vector(auc_value_ci_train_5)[1],as.vector(auc_value_ci_train_5)[3]),
+                                          
+                                          AUC_test = auc_value_test_5, AUC_test_ci = paste(as.vector(auc_value_ci_test_5)[1],as.vector(auc_value_ci_test_5)[3]))
+
+  results_train_5<- data.frame(event = train$event, pred = preds_train_5)
+
+  results_test_5 <- data.frame(event = test$event, pred = preds_test_5)
+}
+
+mydat_6 <- data_protein
+
+combined_proteins_6 <- paste(c('MMP12','COL15A1','APOBR','AGR2','CCL11','IL17A','CXCL13','MSTN','IL6','CCL20','PTGDS','TNXB','MFGE8','CLINT1','CXCL9','PDIA2','IL22','COL2A1','PSCA','EGLN1'), collapse = "+")
+
+formula_6 <- as.formula(paste("Surv(time, event == 1) ~", combined_proteins_6))
+
+if (T){
+
+  fit_6 <- coxph(formula_6, data = mydat_6)
+  summary(fit_6)
+
+  c_index_6 <- summary(fit_6)$concordance[1] 
+  c_index_se_6 <- summary(fit_6)$concordance[2] 
+
+  preds_6 <- predict(fit_6, newdata = mydat_6)
+
+  roc_obj <- roc(mydat_6$event, preds_6)
+  auc_value <- auc(roc_obj)
+  auc_value_ci <- ci(roc_obj)
+
+  auc_6 <-  data.frame(c_index = c_index_6, c_index_se =c_index_se_6,
+                       auc = auc_value, auc_ci = paste(as.vector(auc_value_ci)[1],as.vector(auc_value_ci)[3]))
+
+  results_6 <- data.frame(event = mydat_6$event, pred = preds_6)
+  
+}
+
+if (T){
+  train <- data_protein_train
+  test <- data_protein_test
+
+  fit_train_6 <- coxph(formula_6, data = train)
+
+  c_index_train_6 <- summary(fit_train_6)$concordance[1] 
+  c_index_se_train_6 <- summary(fit_train_6)$concordance[2] 
+
+  preds_train_6 <- predict(fit_train_6, newdata = train)
+
+  roc_obj_train_6 <- roc(train$event, preds_train_6)
+  auc_value_train_6 <- auc(roc_obj_train_6)
+  auc_value_ci_train_6 <- ci(roc_obj_train_6)
+
+  preds_test_6 <- predict(fit_train_6, newdata = test)
+
+  roc_obj_test_6 <- roc(test$event, preds_test_6)
+  auc_value_test_6 <- auc(roc_obj_test_6)
+  auc_value_ci_test_6 <- ci(roc_obj_test_6)
+
+  AUC_train_test_lst_6 <- data.frame(i = i,
+                                          c_index_train = c_index_train_6,c_index_se_train =c_index_se_train_6,
+                                          AUC_train = auc_value_train_6,AUC_train_ci = paste(as.vector(auc_value_ci_train_6)[1],as.vector(auc_value_ci_train_6)[3]),
+                                          
+                                          AUC_test = auc_value_test_6, AUC_test_ci = paste(as.vector(auc_value_ci_test_6)[1],as.vector(auc_value_ci_test_6)[3]))
+
+  results_train_6 <- data.frame(event = train$event, pred = preds_train_6)
+
+  results_test_6 <- data.frame(event = test$event, pred = preds_test_6)
+}
+
+mydat_7 <- data_protein
+formula_7 <- as.formula(paste("Surv(time, event == 1) ~", combined_proteins_6,"+Age + Sex +  Years_education_g2 + Years_education_g3 + employment1 + Income2+ Income3+ Income4+ TDI_g2 + TDI_g3 + TDI_g4 +  Smoking1 + Smoking2 + Alcohol2 + Alcohol3 + Alcohol4 + Alcohol6 + IPAQ1 + IPAQ2 + BMI2 + BMI3 + BMI4 + diet_g2 + diet_g3 + Sleep_g2 + Sleep_g3"))
+
+if (T){
+ 
+  fit_7 <- coxph(formula_7, data = mydat_7)
+  summary(fit_7)
+
+  c_index_7 <- summary(fit_7)$concordance[1] 
+  c_index_se_7 <- summary(fit_7)$concordance[2] 
+
+  preds_7 <- predict(fit_7, newdata = mydat_7)
+
+  roc_obj <- roc(mydat_7$event, preds_7)
+  auc_value <- auc(roc_obj)
+  auc_value_ci <- ci(roc_obj)
+
+  auc_7 <-  data.frame(c_index = c_index_7, c_index_se =c_index_se_7,
+                       auc = auc_value, auc_ci = paste(as.vector(auc_value_ci)[1],as.vector(auc_value_ci)[3]))
+
+  results_7 <- data.frame(event = mydat_7$event, pred = preds_7)
+  
+}
+
+if (T){
+  train <- data_protein_train
+  test <- data_protein_test
+
+  fit_train_7 <- coxph(formula_7, data = train)
+
+  c_index_train_7 <- summary(fit_train_7)$concordance[1] 
+  c_index_se_train_7 <- summary(fit_train_7)$concordance[2] 
+
+  preds_train_7 <- predict(fit_train_7, newdata = train)
+
+  roc_obj_train_7 <- roc(train$event, preds_train_7)
+  auc_value_train_7 <- auc(roc_obj_train_7)
+  auc_value_ci_train_7 <- ci(roc_obj_train_7)
+
+  preds_test_7 <- predict(fit_train_7, newdata = test)
+
+  roc_obj_test_7 <- roc(test$event, preds_test_7)
+  auc_value_test_7 <- auc(roc_obj_test_7)
+  auc_value_ci_test_7 <- ci(roc_obj_test_7)
+
+  AUC_train_test_lst_7 <- data.frame(
+                                          c_index_train = c_index_train_7,c_index_se_train =c_index_se_train_7,
+                                          AUC_train = auc_value_train_7,AUC_train_ci = paste(as.vector(auc_value_ci_train_7)[1],as.vector(auc_value_ci_train_7)[3]),
+                                          
+                                          AUC_test = auc_value_test_7, AUC_test_ci = paste(as.vector(auc_value_ci_test_7)[1],as.vector(auc_value_ci_test_7)[3]))
+
+  results_train_7<- data.frame(event = train$event, pred = preds_train_7)
+
+  results_test_7 <- data.frame(event = test$event, pred = preds_test_7)
+}
+
+roc_list <- list(
+  roc(results_2$event, results_2$pred),
+  roc(results_1$event, results_1$pred),
+  roc(results_3$event, results_3$pred),
+  roc(results_4$event, results_4$pred),
+  roc(results_5$event, results_5$pred),
+  roc(results_6$event, results_6$pred),
+  roc(results_7$event, results_7$pred)
+)
+
+p_values <- data.frame()
+
+for (i in 1:(length(roc_list)-1)) {
+  for (j in (i+1):length(roc_list)) {
+    p_value <- roc.test(roc_list[[i]], roc_list[[j]])$p.value
+    p_values <- rbind(p_values, data.frame(roc1 = i, roc2 = j, p_value = p_value))
+  }
+}
+
+roc_list <- list(
+  roc(results_train_1$event, results_train_1$pred),
+  roc(results_train_2$event, results_train_2$pred),
+  roc(results_train_3$event, results_train_3$pred),
+  roc(results_train_4$event, results_train_4$pred),
+  roc(results_train_5$event, results_train_5$pred),
+  roc(results_train_6$event, results_train_6$pred),
+  roc(results_train_7$event, results_train_7$pred)
+)
+
+p_values <- data.frame()
+
+for (i in 1:(length(roc_list)-1)) {
+  for (j in (i+1):length(roc_list)) {
+    p_value <- roc.test(roc_list[[i]], roc_list[[j]])$p.value
+    p_values <- rbind(p_values, data.frame(roc1 = i, roc2 = j, p_value = p_value))
+  }
+}
+
+roc_list <- list(
+  roc(results_test_1$event, results_test_1$pred),
+  roc(results_test_2$event, results_test_2$pred),
+  roc(results_test_3$event, results_test_3$pred),
+  roc(results_test_4$event, results_test_4$pred),
+  roc(results_test_5$event, results_test_5$pred),
+  roc(results_test_6$event, results_test_6$pred),
+  roc(results_test_7$event, results_test_7$pred)
+)
+
+p_values <- data.frame()
+
+for (i in 1:(length(roc_list)-1)) {
+  for (j in (i+1):length(roc_list)) {
+    p_value <- roc.test(roc_list[[i]], roc_list[[j]])$p.value
+    p_values <- rbind(p_values, data.frame(roc1 = i, roc2 = j, p_value = p_value))
+  }
+}
