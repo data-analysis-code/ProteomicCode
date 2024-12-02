@@ -3,7 +3,7 @@ pacman::p_load('data.table','devtools','MRInstruments','TwoSampleMR','data.table
 rm(list = ls())
 dir="D:\\2.QTL MR analysis\\UK-IBD"   
 setwd(dir)
-exp <- fread("exp_dat.txt"),header=T)  
+exp_dat <- fread("exp_dat.txt"),header=T)  
 
 out_dat <- extract_outcome_data( 
   snps=exp_dat$SNP, 
@@ -31,7 +31,7 @@ save(pleiotropy,file = 'pleiotropy.RData')
 rm(list = ls())
 dir="D:\\2.QTL MR analysis\\FinnGen-IBD"   
 setwd(dir)
-exp <- fread("exp_dat.txt"),header=T)  
+exp_dat <- fread("exp_dat.txt"),header=T)  
 out <- read_tsv(str_c("FinnGen_IBD"))
 out_dat <- format_data( 
   out, 
@@ -76,7 +76,7 @@ pacman::p_load('data.table','devtools','MRInstruments','TwoSampleMR','data.table
 rm(list = ls())
 dir="D:\\2.QTL MR analysis\\UK-CD"   
 setwd(dir)
-exp <- fread("exp_dat.txt"),header=T)  
+exp_dat <- fread("exp_dat.txt"),header=T)  
 
 out_dat <- extract_outcome_data( 
   snps=exp_dat$SNP, 
@@ -104,7 +104,7 @@ save(pleiotropy,file = 'pleiotropy.RData')
 rm(list = ls())
 dir="D:\\2.QTL MR analysis\\FinnGen-CD"   
 setwd(dir)
-exp <- fread("exp_dat.txt"),header=T)  
+exp_dat <- fread("exp_dat.txt"),header=T)  
 out <- read_tsv(str_c("FinnGen_CD"))
 out_dat <- format_data( 
   out, 
@@ -149,7 +149,7 @@ pacman::p_load('data.table','devtools','MRInstruments','TwoSampleMR','data.table
 rm(list = ls())
 dir="D:\\2.QTL MR analysis\\UK-UC"   
 setwd(dir)
-exp <- fread("exp_dat.txt"),header=T)  
+exp_dat <- fread("exp_dat.txt"),header=T)  
 
 out_dat <- extract_outcome_data( 
   snps=exp_dat$SNP, 
@@ -177,7 +177,7 @@ save(pleiotropy,file = 'pleiotropy.RData')
 rm(list = ls())
 dir="D:\\2.QTL MR analysis\\FinnGen-UC"   
 setwd(dir)
-exp <- fread("exp_dat.txt"),header=T)  
+exp_dat <- fread("exp_dat.txt"),header=T)  
 out <- read_tsv(str_c("FinnGen_UC"))
 out_dat <- format_data( 
   out, 
