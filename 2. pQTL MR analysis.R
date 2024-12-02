@@ -1,7 +1,7 @@
 pacman::p_load('data.table','devtools','MRInstruments','TwoSampleMR','data.table','devtools','MRInstruments','biomaRt','fdrtool',
                'MendelianRandomization','simex','MRPRESSO','stringr',"dplyr","remotes","coloc","readr","openxlsx","LDlinkR")
 rm(list = ls())
-dir="D:\\2.QTL MR analysis\\UK-IBD"   
+dir="D:\\2.pQTL MR analysis\\UK-IBD"   
 setwd(dir)
 exp_dat <- fread("exp_dat.txt"),header=T)  
 
@@ -29,7 +29,7 @@ save(pleiotropy,file = 'pleiotropy.RData')
 
 
 rm(list = ls())
-dir="D:\\2.QTL MR analysis\\FinnGen-IBD"   
+dir="D:\\2.pQTL MR analysis\\FinnGen-IBD"   
 setwd(dir)
 exp_dat <- fread("exp_dat.txt"),header=T)  
 out <- read_tsv(str_c("FinnGen_IBD"))
@@ -63,18 +63,18 @@ pleiotropy <- mr_pleiotropy_test(mydata_steiger)
 save(pleiotropy,file = 'pleiotropy.RData')
 
 
-uk_data <- load('D:\\2.QTL MR analysis\\UK-IBD\\clean_mr_mrbase.RData')
-finn_data <-  load('D:\\2.QTL MR analysis\\FinnGen-IBD\\clean_mr_mrbase.RData')               
+uk_data <- load('D:\\2.pQTL MR analysis\\UK-IBD\\clean_mr_mrbase.RData')
+finn_data <-  load('D:\\2.pQTL MR analysis\\FinnGen-IBD\\clean_mr_mrbase.RData')               
 metadata <- rbind(uk_data, finn_data)
 metamod <- rma(yi = metadata[,1], sei = metadata[,2], method = "FE")  
-save(metamod,file = 'D:\\2.QTL MR analysis\\meta-IBD.RData')
+save(metamod,file = 'D:\\2.pQTL MR analysis\\meta-IBD.RData')
 
 
 
 pacman::p_load('data.table','devtools','MRInstruments','TwoSampleMR','data.table','devtools','MRInstruments','biomaRt','fdrtool',
                'MendelianRandomization','simex','MRPRESSO','stringr',"dplyr","remotes","coloc","readr","openxlsx","LDlinkR")
 rm(list = ls())
-dir="D:\\2.QTL MR analysis\\UK-CD"   
+dir="D:\\2.pQTL MR analysis\\UK-CD"   
 setwd(dir)
 exp_dat <- fread("exp_dat.txt"),header=T)  
 
@@ -102,7 +102,7 @@ save(pleiotropy,file = 'pleiotropy.RData')
 
 
 rm(list = ls())
-dir="D:\\2.QTL MR analysis\\FinnGen-CD"   
+dir="D:\\2.pQTL MR analysis\\FinnGen-CD"   
 setwd(dir)
 exp_dat <- fread("exp_dat.txt"),header=T)  
 out <- read_tsv(str_c("FinnGen_CD"))
@@ -136,18 +136,18 @@ pleiotropy <- mr_pleiotropy_test(mydata_steiger)
 save(pleiotropy,file = 'pleiotropy.RData')
 
 
-uk_data <- load('D:\\2.QTL MR analysis\\UK-CD\\clean_mr_mrbase.RData')
-finn_data <-  load('D:\\2.QTL MR analysis\\FinnGen-CD\\clean_mr_mrbase.RData')               
+uk_data <- load('D:\\2.pQTL MR analysis\\UK-CD\\clean_mr_mrbase.RData')
+finn_data <-  load('D:\\2.pQTL MR analysis\\FinnGen-CD\\clean_mr_mrbase.RData')               
 metadata <- rbind(uk_data, finn_data)
 metamod <- rma(yi = metadata[,1], sei = metadata[,2], method = "FE")  
-save(metamod,file = 'D:\\2.QTL MR analysis\\meta-CD.RData')
+save(metamod,file = 'D:\\2.pQTL MR analysis\\meta-CD.RData')
 
 
 
 pacman::p_load('data.table','devtools','MRInstruments','TwoSampleMR','data.table','devtools','MRInstruments','biomaRt','fdrtool',
                'MendelianRandomization','simex','MRPRESSO','stringr',"dplyr","remotes","coloc","readr","openxlsx","LDlinkR")
 rm(list = ls())
-dir="D:\\2.QTL MR analysis\\UK-UC"   
+dir="D:\\2.pQTL MR analysis\\UK-UC"   
 setwd(dir)
 exp_dat <- fread("exp_dat.txt"),header=T)  
 
@@ -175,7 +175,7 @@ save(pleiotropy,file = 'pleiotropy.RData')
 
 
 rm(list = ls())
-dir="D:\\2.QTL MR analysis\\FinnGen-UC"   
+dir="D:\\2.pQTL MR analysis\\FinnGen-UC"   
 setwd(dir)
 exp_dat <- fread("exp_dat.txt"),header=T)  
 out <- read_tsv(str_c("FinnGen_UC"))
@@ -209,8 +209,8 @@ pleiotropy <- mr_pleiotropy_test(mydata_steiger)
 save(pleiotropy,file = 'pleiotropy.RData')
 
 
-uk_data <- load('D:\\2.QTL MR analysis\\UK-UC\\clean_mr_mrbase.RData')
-finn_data <-  load('D:\\2.QTL MR analysis\\FinnGen-UC\\clean_mr_mrbase.RData')               
+uk_data <- load('D:\\2.pQTL MR analysis\\UK-UC\\clean_mr_mrbase.RData')
+finn_data <-  load('D:\\2.pQTL MR analysis\\FinnGen-UC\\clean_mr_mrbase.RData')               
 metadata <- rbind(uk_data, finn_data)
 metamod <- rma(yi = metadata[,1], sei = metadata[,2], method = "FE")  
-save(metamod,file = 'D:\\2.QTL MR analysis\\meta-UC.RData')
+save(metamod,file = 'D:\\2.pQTL MR analysis\\meta-UC.RData')
