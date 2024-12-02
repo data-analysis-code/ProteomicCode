@@ -86,7 +86,7 @@ mydata <- harmonise_data(
   exposure_dat = exp_dat,
   outcome_dat = out_dat_subset)
 head(mydata)    
-mydata[,"mr_keep"][mydata[,"mr_keep"] == "FALSE" & mydata[,"eaf.outcome"] >0.6] = "TRUE"    # 由于暴露eaf缺失的解决办法
+mydata[,"mr_keep"][mydata[,"mr_keep"] == "FALSE" & mydata[,"eaf.outcome"] >0.6] = "TRUE"    
 mydata[,"mr_keep"][mydata[,"mr_keep"] == "FALSE" & mydata[,"eaf.outcome"] <0.4] = "TRUE"
 mydata$mr_keep <- as.logical(mydata$mr_keep)
 
@@ -200,7 +200,7 @@ mydata <- harmonise_data(
   exposure_dat = exp_dat,
   outcome_dat = out_dat_subset)
 head(mydata)    
-mydata[,"mr_keep"][mydata[,"mr_keep"] == "FALSE" & mydata[,"eaf.outcome"] >0.6] = "TRUE"    # 由于暴露eaf缺失的解决办法
+mydata[,"mr_keep"][mydata[,"mr_keep"] == "FALSE" & mydata[,"eaf.outcome"] >0.6] = "TRUE"  
 mydata[,"mr_keep"][mydata[,"mr_keep"] == "FALSE" & mydata[,"eaf.outcome"] <0.4] = "TRUE"
 mydata$mr_keep <- as.logical(mydata$mr_keep)
 
@@ -314,7 +314,7 @@ mydata <- harmonise_data(
   exposure_dat = exp_dat,
   outcome_dat = out_dat_subset)
 head(mydata)    
-mydata[,"mr_keep"][mydata[,"mr_keep"] == "FALSE" & mydata[,"eaf.outcome"] >0.6] = "TRUE"    # 由于暴露eaf缺失的解决办法
+mydata[,"mr_keep"][mydata[,"mr_keep"] == "FALSE" & mydata[,"eaf.outcome"] >0.6] = "TRUE"   
 mydata[,"mr_keep"][mydata[,"mr_keep"] == "FALSE" & mydata[,"eaf.outcome"] <0.4] = "TRUE"
 mydata$mr_keep <- as.logical(mydata$mr_keep)
 
