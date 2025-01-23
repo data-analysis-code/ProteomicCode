@@ -3,10 +3,12 @@ The prospective relationship between proteomics and inflammatory bowel disease (
 
 
 Data availability
+
 Researchers can apply to use the UK Biobank resource for health-related research that is in the public interest (https://www.ukbiobank.ac.uk/enable-your-research/register). This research has been conducted using the UK Biobank application number 104277. The pQTL data were sourced from the UK Biobank Pharma Proteomics Project (UKB-PPP) (https://www.synapse.org/Synapse:syn51364943), the deCODE Health study (https://www.decode.com/summarydata/), and the Fenland study (https://www.omicscience.org/apps/pgwas). GWAS summary statistics for IBD and its subtypes can be accessed via the IIBDGC consortium (https://www.ibdgenetics.org/) and the FinnGen R9 study (https://www.finngen.fi/fi). Tissue-specific eQTL data were retrieved from the GTEx database (https://www.gtexportal.org/). Single-cell RNA-seq data were retrieved from colonic mucosa in IBD were obtained from the GEO database (https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE214695). Interacting Genes (STRING) database (https://cn.string-db.org/). Database for Annotation, Visualization and Integrated Discovery (DAVID, https://davidbioinformatics.nih.gov/). DrugBank database (https://go.drugbank.com). OpenTargets database (https://platform.opentargets.org/). Therapeutic Target Database (https://db.idrblab.net/ttd/). When using the dataset, authors should cite the original publication. Source data are provided with this paper.
 
 
 Acknowledgments
+
 We thank all participants and investigators of the UK Biobank, the Inflammatory Bowel Disease Genetics Consortium, the FinnGen study, and Sun et al. GWAS analysis on proteome from UKB-PPP, Ferkingstad et al. GWAS analysis on proteome from deCODE Health study, and Pietzner. et al. GWAS analysis on proteome from Fenland study. This study was supported by the National Key Research and Development Program of China (grant number: 2021YFF1201101 (M.L)), the National Natural Science Foundation of China (grant numbers: 82173591 (M.L), 82103912 (X.R.Y) and 82204129 (T.C.Z)), the Taishan Scholars Program of Shandong Province (tstp20230654 (M.L) and tsqn202312328 (X.R.Y)), the Excellent Youth Innovation Team of Shandong Provincial Higher Education Institutions (2022KJ012 (X.R.Y)), and Shandong Provincial Natural Science Foundation (ZR2022QH162 (X.R.Y)).
 
 
