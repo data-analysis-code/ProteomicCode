@@ -1,0 +1,424 @@
+# IBD 
+# Python
+
+df_all = pd.read_csv('D:\\ProteomicCode\\model\\data_train.csv')
+df_all['time'] = df_all['time_InflammatoryBowel']  
+df_all['event'] = df_all['event_InflammatoryBowel']  
+data_id = pd.read_excel("D:\\ProteomicCode\\model\\data_train_cox_result_IBD.xlsx", sheet_name="Sheet 1")
+data_id = data_id[(data_id['FDR'] < 0.05) & (~data_id['FDR'].isna())]
+selected_columns = data_id['Pro_code'].tolist()
+df = df_all[selected_columns + ['event', 'time']]
+duration = np.array(df['time'])
+event = np.array(df['event'])
+event = (event == 1)
+y = duration.copy()
+y[event == False] *= -1
+X = df.drop(['time', 'event'], axis=1)
+xgb_full = xgboost.DMatrix(X, label=y)
+params = {
+    "eta": 0.002,
+    "max_depth": 3,
+    "objective": "survival:cox",
+    "subsample": 0.5
+}
+model = xgboost.train(params, xgb_full, 5000, evals = [(xgb_full, "test")], verbose_eval=1000)
+shap_values = shap.TreeExplainer(model).shap_values(X)
+print(shap_values)
+shap_df = pd.DataFrame(shap_values, columns=X.columns)
+shap_mean = shap_df.abs().mean().sort_values(ascending=False)
+shap_result = pd.DataFrame({
+    "Protein": shap_mean.index,
+    "Mean_SHAP_Value": shap_mean.values
+})
+shap_result.to_csv("D:\\ProteomicCode\\model\\shap_values_proteins_IBD.csv", index=False)
+shap.summary_plot(shap_values, X, max_display=10)
+
+
+# R
+rm(list = ls())
+pacman::p_load(ROCR,pROC,survival,glmnet,impute,'dplyr','data.table','fst','plyr','tidyr','Hmisc','tableone','zoo','mgcv','splines',stringr,dplyr,progress,survival,openxlsx,plotRCS)
+dir="D:\\ProteomicCode\\model"   
+setwd(dir)
+
+train <- fread('data_train.csv')
+train$time <- train$time_InflammatoryBowel
+train$event <- train$event_InflammatoryBowel
+test <- fread('data_test.csv')
+test$time <- test$time_InflammatoryBowel
+test$event <- test$event_InflammatoryBowel
+
+formula_1 <- as.formula(paste("Surv(time, event == 1) ~", "Age + Sex +  Years_education_g2 + Years_education_g3 + employment1 + Income2+ Income3+ Income4+ TDI_g2 + TDI_g3 + TDI_g4 +  Smoking1 + Smoking2 + Alcohol2 + Alcohol3 + Alcohol4 + Alcohol6 + IPAQ1 + IPAQ2 + BMI2 + BMI3 + BMI4 + diet_g2 + diet_g3 + Sleep_g2 + Sleep_g3"))
+if (T){
+  fit_train_1 <- coxph(formula_1, data = train)
+  c_index_train_1 <- summary(fit_train_1)$concordance[1] 
+  c_index_se_train_1 <- summary(fit_train_1)$concordance[2] 
+  preds_train_1 <- predict(fit_train_1, newdata = train)
+  roc_obj_train_1 <- roc(train$event, preds_train_1)
+  auc_value_train_1 <- auc(roc_obj_train_1)
+  auc_value_ci_train_1 <- ci(roc_obj_train_1)
+  preds_test_1 <- predict(fit_train_1, newdata = test)
+  roc_obj_test_1 <- roc(test$event, preds_test_1)
+  auc_value_test_1 <- auc(roc_obj_test_1)
+  auc_value_ci_test_1 <- ci(roc_obj_test_1)
+  AUC_train_test_lst_1 <- data.frame(c_index_train = c_index_train_1, c_index_se_train =c_index_se_train_1,
+                                          AUC_train = auc_value_train_1,AUC_train_ci = paste(as.vector(auc_value_ci_train_1)[1],as.vector(auc_value_ci_train_1)[3]),
+                                          AUC_test = auc_value_test_1, AUC_test_ci = paste(as.vector(auc_value_ci_test_1)[1],as.vector(auc_value_ci_test_1)[3]))
+  results_train_1 <- data.frame(event = train$event, pred = preds_train_1)
+  results_test_1 <- data.frame(event = test$event, pred = preds_test_1)
+}
+
+
+top_id <- read.csv("D:\\ProteomicCode\\model\\shap_values_proteins_IBD.csv")
+combined_proteins_2 <-  paste((top_id[1:10,1]), collapse = "+")
+formula_2 <- as.formula(paste("Surv(time, event == 1) ~", combined_proteins_2))
+if (T){
+  fit_train_2 <- coxph(formula_2, data = train)
+  c_index_train_2 <- summary(fit_train_2)$concordance[1] 
+  c_index_se_train_2 <- summary(fit_train_2)$concordance[2] 
+  preds_train_2 <- predict(fit_train_2, newdata = train)
+  roc_obj_train_2 <- roc(train$event, preds_train_2)
+  auc_value_train_2 <- auc(roc_obj_train_2)
+  auc_value_ci_train_2 <- ci(roc_obj_train_2)
+  preds_test_2 <- predict(fit_train_2, newdata = test)
+  roc_obj_test_2 <- roc(test$event, preds_test_2)
+  auc_value_test_2 <- auc(roc_obj_test_2)
+  auc_value_ci_test_2 <- ci(roc_obj_test_2)
+  AUC_train_test_lst_2 <- data.frame(c_index_train = c_index_train_2, c_index_se_train =c_index_se_train_2,
+                                          AUC_train = auc_value_train_2,AUC_train_ci = paste(as.vector(auc_value_ci_train_2)[1],as.vector(auc_value_ci_train_2)[3]),
+                                          AUC_test = auc_value_test_2, AUC_test_ci = paste(as.vector(auc_value_ci_test_2)[1],as.vector(auc_value_ci_test_2)[3]))
+  results_train_2 <- data.frame(event = train$event, pred = preds_train_2)
+  results_test_2 <- data.frame(event = test$event, pred = preds_test_2)
+}
+
+
+formula_3 <- as.formula(paste("Surv(time, event == 1) ~", combined_proteins_2,"+Age + Sex +  Years_education_g2 + Years_education_g3 + employment1 + Income2+ Income3+ Income4+ TDI_g2 + TDI_g3 + TDI_g4 +  Smoking1 + Smoking2 + Alcohol2 + Alcohol3 + Alcohol4 + Alcohol6 + IPAQ1 + IPAQ2 + BMI2 + BMI3 + BMI4 + diet_g2 + diet_g3 + Sleep_g2 + Sleep_g3"))
+if (T){
+  fit_train_3 <- coxph(formula_3, data = train)
+  c_index_train_3 <- summary(fit_train_3)$concordance[1] 
+  c_index_se_train_3 <- summary(fit_train_3)$concordance[2] 
+  preds_train_3 <- predict(fit_train_3, newdata = train)
+  roc_obj_train_3 <- roc(train$event, preds_train_3)
+  auc_value_train_3 <- auc(roc_obj_train_3)
+  auc_value_ci_train_3 <- ci(roc_obj_train_3)
+  preds_test_3 <- predict(fit_train_3, newdata = test)
+  roc_obj_test_3 <- roc(test$event, preds_test_3)
+  auc_value_test_3 <- auc(roc_obj_test_3)
+  auc_value_ci_test_3 <- ci(roc_obj_test_3)
+  AUC_train_test_lst_3 <- data.frame(c_index_train = c_index_train_3, c_index_se_train =c_index_se_train_3,
+                                          AUC_train = auc_value_train_3,AUC_train_ci = paste(as.vector(auc_value_ci_train_3)[1],as.vector(auc_value_ci_train_3)[3]),
+                                          AUC_test = auc_value_test_3, AUC_test_ci = paste(as.vector(auc_value_ci_test_3)[1],as.vector(auc_value_ci_test_3)[3]))
+  results_train_3 <- data.frame(event = train$event, pred = preds_train_3)
+  results_test_3 <- data.frame(event = test$event, pred = preds_test_3)
+}
+
+
+roc_list <- list(
+  roc(results_train_1$event, results_train_1$pred),
+  roc(results_train_2$event, results_train_2$pred),
+  roc(results_train_3$event, results_train_3$pred)
+)
+p_values <- data.frame()
+for (i in 1:(length(roc_list)-1)) {
+  for (j in (i+1):length(roc_list)) {
+    p_value <- roc.test(roc_list[[i]], roc_list[[j]])$p.value
+    p_values <- rbind(p_values, data.frame(roc1 = i, roc2 = j, p_value = p_value))
+  }
+}
+print(p_values)
+roc_list <- list(
+  roc(results_test_1$event, results_test_1$pred),
+  roc(results_test_2$event, results_test_2$pred),
+  roc(results_test_3$event, results_test_3$pred)
+)
+p_values <- data.frame()
+for (i in 1:(length(roc_list)-1)) {
+  for (j in (i+1):length(roc_list)) {
+    p_value <- roc.test(roc_list[[i]], roc_list[[j]])$p.value
+    p_values <- rbind(p_values, data.frame(roc1 = i, roc2 = j, p_value = p_value))
+  }
+}
+print(p_values)
+
+
+# CD 
+# Python
+
+df_all = pd.read_csv('D:\\ProteomicCode\\model\\data_train.csv')
+df_all['time'] = df_all['time_Crohnsdisease']  
+df_all['event'] = df_all['event_Crohnsdisease']  
+data_id = pd.read_excel("D:\\ProteomicCode\\model\\data_train_cox_result_CD.xlsx", sheet_name="Sheet 1")
+data_id = data_id[(data_id['FDR'] < 0.05) & (~data_id['FDR'].isna())]
+selected_columns = data_id['Pro_code'].tolist()
+df = df_all[selected_columns + ['event', 'time']]
+duration = np.array(df['time'])
+event = np.array(df['event'])
+event = (event == 1)
+y = duration.copy()
+y[event == False] *= -1
+X = df.drop(['time', 'event'], axis=1)
+xgb_full = xgboost.DMatrix(X, label=y)
+params = {
+    "eta": 0.002,
+    "max_depth": 3,
+    "objective": "survival:cox",
+    "subsample": 0.5
+}
+model = xgboost.train(params, xgb_full, 5000, evals = [(xgb_full, "test")], verbose_eval=1000)
+shap_values = shap.TreeExplainer(model).shap_values(X)
+print(shap_values)
+shap_df = pd.DataFrame(shap_values, columns=X.columns)
+shap_mean = shap_df.abs().mean().sort_values(ascending=False)
+shap_result = pd.DataFrame({
+    "Protein": shap_mean.index,
+    "Mean_SHAP_Value": shap_mean.values
+})
+shap_result.to_csv("D:\\ProteomicCode\\model\\shap_values_proteins_CD.csv", index=False)
+shap.summary_plot(shap_values, X, max_display=10)
+
+
+# R
+rm(list = ls())
+pacman::p_load(ROCR,pROC,survival,glmnet,impute,'dplyr','data.table','fst','plyr','tidyr','Hmisc','tableone','zoo','mgcv','splines',stringr,dplyr,progress,survival,openxlsx,plotRCS)
+dir="D:\\ProteomicCode\\model"   
+setwd(dir)
+
+train <- fread('data_train.csv')
+train$time <- train$time_Crohnsdisease
+train$event <- train$event_Crohnsdisease
+test <- fread('data_test.csv')
+test$time <- test$time_Crohnsdisease
+test$event <- test$event_Crohnsdisease
+
+formula_1 <- as.formula(paste("Surv(time, event == 1) ~", "Age + Sex +  Years_education_g2 + Years_education_g3 + employment1 + Income2+ Income3+ Income4+ TDI_g2 + TDI_g3 + TDI_g4 +  Smoking1 + Smoking2 + Alcohol2 + Alcohol3 + Alcohol4 + Alcohol6 + IPAQ1 + IPAQ2 + BMI2 + BMI3 + BMI4 + diet_g2 + diet_g3 + Sleep_g2 + Sleep_g3"))
+if (T){
+  fit_train_1 <- coxph(formula_1, data = train)
+  c_index_train_1 <- summary(fit_train_1)$concordance[1] 
+  c_index_se_train_1 <- summary(fit_train_1)$concordance[2] 
+  preds_train_1 <- predict(fit_train_1, newdata = train)
+  roc_obj_train_1 <- roc(train$event, preds_train_1)
+  auc_value_train_1 <- auc(roc_obj_train_1)
+  auc_value_ci_train_1 <- ci(roc_obj_train_1)
+  preds_test_1 <- predict(fit_train_1, newdata = test)
+  roc_obj_test_1 <- roc(test$event, preds_test_1)
+  auc_value_test_1 <- auc(roc_obj_test_1)
+  auc_value_ci_test_1 <- ci(roc_obj_test_1)
+  AUC_train_test_lst_1 <- data.frame(c_index_train = c_index_train_1, c_index_se_train =c_index_se_train_1,
+                                          AUC_train = auc_value_train_1,AUC_train_ci = paste(as.vector(auc_value_ci_train_1)[1],as.vector(auc_value_ci_train_1)[3]),
+                                          AUC_test = auc_value_test_1, AUC_test_ci = paste(as.vector(auc_value_ci_test_1)[1],as.vector(auc_value_ci_test_1)[3]))
+  results_train_1 <- data.frame(event = train$event, pred = preds_train_1)
+  results_test_1 <- data.frame(event = test$event, pred = preds_test_1)
+}
+
+
+top_id <- read.csv("D:\\ProteomicCode\\model\\shap_values_proteins_CD.csv")
+combined_proteins_2 <-  paste((top_id[1:10,1]), collapse = "+")
+formula_2 <- as.formula(paste("Surv(time, event == 1) ~", combined_proteins_2))
+if (T){
+  fit_train_2 <- coxph(formula_2, data = train)
+  c_index_train_2 <- summary(fit_train_2)$concordance[1] 
+  c_index_se_train_2 <- summary(fit_train_2)$concordance[2] 
+  preds_train_2 <- predict(fit_train_2, newdata = train)
+  roc_obj_train_2 <- roc(train$event, preds_train_2)
+  auc_value_train_2 <- auc(roc_obj_train_2)
+  auc_value_ci_train_2 <- ci(roc_obj_train_2)
+  preds_test_2 <- predict(fit_train_2, newdata = test)
+  roc_obj_test_2 <- roc(test$event, preds_test_2)
+  auc_value_test_2 <- auc(roc_obj_test_2)
+  auc_value_ci_test_2 <- ci(roc_obj_test_2)
+  AUC_train_test_lst_2 <- data.frame(c_index_train = c_index_train_2, c_index_se_train =c_index_se_train_2,
+                                          AUC_train = auc_value_train_2,AUC_train_ci = paste(as.vector(auc_value_ci_train_2)[1],as.vector(auc_value_ci_train_2)[3]),
+                                          AUC_test = auc_value_test_2, AUC_test_ci = paste(as.vector(auc_value_ci_test_2)[1],as.vector(auc_value_ci_test_2)[3]))
+  results_train_2 <- data.frame(event = train$event, pred = preds_train_2)
+  results_test_2 <- data.frame(event = test$event, pred = preds_test_2)
+}
+
+
+formula_3 <- as.formula(paste("Surv(time, event == 1) ~", combined_proteins_2,"+Age + Sex +  Years_education_g2 + Years_education_g3 + employment1 + Income2+ Income3+ Income4+ TDI_g2 + TDI_g3 + TDI_g4 +  Smoking1 + Smoking2 + Alcohol2 + Alcohol3 + Alcohol4 + Alcohol6 + IPAQ1 + IPAQ2 + BMI2 + BMI3 + BMI4 + diet_g2 + diet_g3 + Sleep_g2 + Sleep_g3"))
+if (T){
+  fit_train_3 <- coxph(formula_3, data = train)
+  c_index_train_3 <- summary(fit_train_3)$concordance[1] 
+  c_index_se_train_3 <- summary(fit_train_3)$concordance[2] 
+  preds_train_3 <- predict(fit_train_3, newdata = train)
+  roc_obj_train_3 <- roc(train$event, preds_train_3)
+  auc_value_train_3 <- auc(roc_obj_train_3)
+  auc_value_ci_train_3 <- ci(roc_obj_train_3)
+  preds_test_3 <- predict(fit_train_3, newdata = test)
+  roc_obj_test_3 <- roc(test$event, preds_test_3)
+  auc_value_test_3 <- auc(roc_obj_test_3)
+  auc_value_ci_test_3 <- ci(roc_obj_test_3)
+  AUC_train_test_lst_3 <- data.frame(c_index_train = c_index_train_3, c_index_se_train =c_index_se_train_3,
+                                          AUC_train = auc_value_train_3,AUC_train_ci = paste(as.vector(auc_value_ci_train_3)[1],as.vector(auc_value_ci_train_3)[3]),
+                                          AUC_test = auc_value_test_3, AUC_test_ci = paste(as.vector(auc_value_ci_test_3)[1],as.vector(auc_value_ci_test_3)[3]))
+  results_train_3 <- data.frame(event = train$event, pred = preds_train_3)
+  results_test_3 <- data.frame(event = test$event, pred = preds_test_3)
+}
+
+
+roc_list <- list(
+  roc(results_train_1$event, results_train_1$pred),
+  roc(results_train_2$event, results_train_2$pred),
+  roc(results_train_3$event, results_train_3$pred)
+)
+p_values <- data.frame()
+for (i in 1:(length(roc_list)-1)) {
+  for (j in (i+1):length(roc_list)) {
+    p_value <- roc.test(roc_list[[i]], roc_list[[j]])$p.value
+    p_values <- rbind(p_values, data.frame(roc1 = i, roc2 = j, p_value = p_value))
+  }
+}
+print(p_values)
+roc_list <- list(
+  roc(results_test_1$event, results_test_1$pred),
+  roc(results_test_2$event, results_test_2$pred),
+  roc(results_test_3$event, results_test_3$pred)
+)
+p_values <- data.frame()
+for (i in 1:(length(roc_list)-1)) {
+  for (j in (i+1):length(roc_list)) {
+    p_value <- roc.test(roc_list[[i]], roc_list[[j]])$p.value
+    p_values <- rbind(p_values, data.frame(roc1 = i, roc2 = j, p_value = p_value))
+  }
+}
+print(p_values)
+
+
+# UC
+# Python
+
+df_all = pd.read_csv('D:\\ProteomicCode\\model\\data_train.csv')
+df_all['time'] = df_all['time_ulcerativecolitis']  
+df_all['event'] = df_all['event_ulcerativecolitis']  
+data_id = pd.read_excel("D:\\ProteomicCode\\model\\data_train_cox_result_UC.xlsx", sheet_name="Sheet 1")
+data_id = data_id[(data_id['FDR'] < 0.05) & (~data_id['FDR'].isna())]
+selected_columns = data_id['Pro_code'].tolist()
+df = df_all[selected_columns + ['event', 'time']]
+duration = np.array(df['time'])
+event = np.array(df['event'])
+event = (event == 1)
+y = duration.copy()
+y[event == False] *= -1
+X = df.drop(['time', 'event'], axis=1)
+xgb_full = xgboost.DMatrix(X, label=y)
+params = {
+    "eta": 0.002,
+    "max_depth": 3,
+    "objective": "survival:cox",
+    "subsample": 0.5
+}
+model = xgboost.train(params, xgb_full, 5000, evals = [(xgb_full, "test")], verbose_eval=1000)
+shap_values = shap.TreeExplainer(model).shap_values(X)
+print(shap_values)
+shap_df = pd.DataFrame(shap_values, columns=X.columns)
+shap_mean = shap_df.abs().mean().sort_values(ascending=False)
+shap_result = pd.DataFrame({
+    "Protein": shap_mean.index,
+    "Mean_SHAP_Value": shap_mean.values
+})
+shap_result.to_csv("D:\\ProteomicCode\\model\\shap_values_proteins_UC.csv", index=False)
+shap.summary_plot(shap_values, X, max_display=10)
+
+
+# R
+rm(list = ls())
+pacman::p_load(ROCR,pROC,survival,glmnet,impute,'dplyr','data.table','fst','plyr','tidyr','Hmisc','tableone','zoo','mgcv','splines',stringr,dplyr,progress,survival,openxlsx,plotRCS)
+dir="D:\\ProteomicCode\\model"   
+setwd(dir)
+
+train <- fread('data_train.csv')
+train$time <- train$time_ulcerativecolitis
+train$event <- train$event_ulcerativecolitis
+test <- fread('data_test.csv')
+test$time <- test$time_ulcerativecolitis
+test$event <- test$event_ulcerativecolitis
+
+formula_1 <- as.formula(paste("Surv(time, event == 1) ~", "Age + Sex +  Years_education_g2 + Years_education_g3 + employment1 + Income2+ Income3+ Income4+ TDI_g2 + TDI_g3 + TDI_g4 +  Smoking1 + Smoking2 + Alcohol2 + Alcohol3 + Alcohol4 + Alcohol6 + IPAQ1 + IPAQ2 + BMI2 + BMI3 + BMI4 + diet_g2 + diet_g3 + Sleep_g2 + Sleep_g3"))
+if (T){
+  fit_train_1 <- coxph(formula_1, data = train)
+  c_index_train_1 <- summary(fit_train_1)$concordance[1] 
+  c_index_se_train_1 <- summary(fit_train_1)$concordance[2] 
+  preds_train_1 <- predict(fit_train_1, newdata = train)
+  roc_obj_train_1 <- roc(train$event, preds_train_1)
+  auc_value_train_1 <- auc(roc_obj_train_1)
+  auc_value_ci_train_1 <- ci(roc_obj_train_1)
+  preds_test_1 <- predict(fit_train_1, newdata = test)
+  roc_obj_test_1 <- roc(test$event, preds_test_1)
+  auc_value_test_1 <- auc(roc_obj_test_1)
+  auc_value_ci_test_1 <- ci(roc_obj_test_1)
+  AUC_train_test_lst_1 <- data.frame(c_index_train = c_index_train_1, c_index_se_train =c_index_se_train_1,
+                                          AUC_train = auc_value_train_1,AUC_train_ci = paste(as.vector(auc_value_ci_train_1)[1],as.vector(auc_value_ci_train_1)[3]),
+                                          AUC_test = auc_value_test_1, AUC_test_ci = paste(as.vector(auc_value_ci_test_1)[1],as.vector(auc_value_ci_test_1)[3]))
+  results_train_1 <- data.frame(event = train$event, pred = preds_train_1)
+  results_test_1 <- data.frame(event = test$event, pred = preds_test_1)
+}
+
+
+top_id <- read.csv("D:\\ProteomicCode\\model\\shap_values_proteins_UC.csv")
+combined_proteins_2 <-  paste((top_id[1:10,1]), collapse = "+")
+formula_2 <- as.formula(paste("Surv(time, event == 1) ~", combined_proteins_2))
+if (T){
+  fit_train_2 <- coxph(formula_2, data = train)
+  c_index_train_2 <- summary(fit_train_2)$concordance[1] 
+  c_index_se_train_2 <- summary(fit_train_2)$concordance[2] 
+  preds_train_2 <- predict(fit_train_2, newdata = train)
+  roc_obj_train_2 <- roc(train$event, preds_train_2)
+  auc_value_train_2 <- auc(roc_obj_train_2)
+  auc_value_ci_train_2 <- ci(roc_obj_train_2)
+  preds_test_2 <- predict(fit_train_2, newdata = test)
+  roc_obj_test_2 <- roc(test$event, preds_test_2)
+  auc_value_test_2 <- auc(roc_obj_test_2)
+  auc_value_ci_test_2 <- ci(roc_obj_test_2)
+  AUC_train_test_lst_2 <- data.frame(c_index_train = c_index_train_2, c_index_se_train =c_index_se_train_2,
+                                          AUC_train = auc_value_train_2,AUC_train_ci = paste(as.vector(auc_value_ci_train_2)[1],as.vector(auc_value_ci_train_2)[3]),
+                                          AUC_test = auc_value_test_2, AUC_test_ci = paste(as.vector(auc_value_ci_test_2)[1],as.vector(auc_value_ci_test_2)[3]))
+  results_train_2 <- data.frame(event = train$event, pred = preds_train_2)
+  results_test_2 <- data.frame(event = test$event, pred = preds_test_2)
+}
+
+
+formula_3 <- as.formula(paste("Surv(time, event == 1) ~", combined_proteins_2,"+Age + Sex +  Years_education_g2 + Years_education_g3 + employment1 + Income2+ Income3+ Income4+ TDI_g2 + TDI_g3 + TDI_g4 +  Smoking1 + Smoking2 + Alcohol2 + Alcohol3 + Alcohol4 + Alcohol6 + IPAQ1 + IPAQ2 + BMI2 + BMI3 + BMI4 + diet_g2 + diet_g3 + Sleep_g2 + Sleep_g3"))
+if (T){
+  fit_train_3 <- coxph(formula_3, data = train)
+  c_index_train_3 <- summary(fit_train_3)$concordance[1] 
+  c_index_se_train_3 <- summary(fit_train_3)$concordance[2] 
+  preds_train_3 <- predict(fit_train_3, newdata = train)
+  roc_obj_train_3 <- roc(train$event, preds_train_3)
+  auc_value_train_3 <- auc(roc_obj_train_3)
+  auc_value_ci_train_3 <- ci(roc_obj_train_3)
+  preds_test_3 <- predict(fit_train_3, newdata = test)
+  roc_obj_test_3 <- roc(test$event, preds_test_3)
+  auc_value_test_3 <- auc(roc_obj_test_3)
+  auc_value_ci_test_3 <- ci(roc_obj_test_3)
+  AUC_train_test_lst_3 <- data.frame(c_index_train = c_index_train_3, c_index_se_train =c_index_se_train_3,
+                                          AUC_train = auc_value_train_3,AUC_train_ci = paste(as.vector(auc_value_ci_train_3)[1],as.vector(auc_value_ci_train_3)[3]),
+                                          AUC_test = auc_value_test_3, AUC_test_ci = paste(as.vector(auc_value_ci_test_3)[1],as.vector(auc_value_ci_test_3)[3]))
+  results_train_3 <- data.frame(event = train$event, pred = preds_train_3)
+  results_test_3 <- data.frame(event = test$event, pred = preds_test_3)
+}
+
+
+roc_list <- list(
+  roc(results_train_1$event, results_train_1$pred),
+  roc(results_train_2$event, results_train_2$pred),
+  roc(results_train_3$event, results_train_3$pred)
+)
+p_values <- data.frame()
+for (i in 1:(length(roc_list)-1)) {
+  for (j in (i+1):length(roc_list)) {
+    p_value <- roc.test(roc_list[[i]], roc_list[[j]])$p.value
+    p_values <- rbind(p_values, data.frame(roc1 = i, roc2 = j, p_value = p_value))
+  }
+}
+print(p_values)
+roc_list <- list(
+  roc(results_test_1$event, results_test_1$pred),
+  roc(results_test_2$event, results_test_2$pred),
+  roc(results_test_3$event, results_test_3$pred)
+)
+p_values <- data.frame()
+for (i in 1:(length(roc_list)-1)) {
+  for (j in (i+1):length(roc_list)) {
+    p_value <- roc.test(roc_list[[i]], roc_list[[j]])$p.value
+    p_values <- rbind(p_values, data.frame(roc1 = i, roc2 = j, p_value = p_value))
+  }
+}
+print(p_values)
